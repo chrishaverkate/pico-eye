@@ -1,0 +1,17 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml
+# Editor-based HTTP Client requests
+/httpRequests/
+/deployment.xml
+/encodings.xml
+/misc.xml
+/modules.xml
+/other.xml
+/pico-one.iml
+/inspectionProfiles/Project_Default.xml
+/serialmonitor_settings.xml
+/vcs.xml

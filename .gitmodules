@@ -1,0 +1,6 @@
+[submodule "extern/pico-sdk"]
+	path = extern/pico-sdk
+	url = https://github.com/raspberrypi/pico-sdk.git
+[submodule "extern/googletest"]
+	path = extern/googletest
+	url = https://github.com/google/googletest.git

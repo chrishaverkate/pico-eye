@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+
+  # Defines base image and container configuration to launch a development environment.
+  # IDE's can use user@localhost on port 2222 as if it was a remote machine for compiling.
+  # run:
+  #     docker-compose up
+  pico-gcc-base-eye:
+    build:
+      context: pico-gcc/
+    image: clion/remote-cpp-env:0.5
+    volumes:
+      - ../:/opt/src
+    ports:
+      - "127.0.0.1:2222:22"
+    stdin_open: true
+    tty: true
+    working_dir: /opt/src/build
+    entrypoint: /usr/sbin/sshd -D -e -f /etc/ssh/sshd_config_test_clion
+
+  # run 'docker-compose run --rm pico-gcc-automated' in the docker folder.
+  # output will be in the build folder
+  pico-gcc-automated-eye:
+    extends:
+      service: pico-gcc-base-eye
+    container_name: automated-pico
+    entrypoint: /bin/bash /opt/src/scripts/run-build-linux.bash pico
