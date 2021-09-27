@@ -1,7 +1,7 @@
 set(target_name unit-tests)
 
 add_executable(${target_name}
-	delay_incrementer.cpp
+	veml7700_tests.cpp
 )
 
 set_target_properties(${target_name}

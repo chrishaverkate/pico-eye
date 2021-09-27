@@ -5,7 +5,7 @@ add_library(
 	${target_name}
 	OBJECT
 
-	delay_incrementer.cpp
+	veml7700.cpp
 )
 
 target_link_libraries(

@@ -13,7 +13,7 @@ message("\tCXX:  ${CMAKE_CXX_FLAGS}")
 message("")
 
 message("Applications")
-message("\tpico-blink:  ${PRJ_APPS_BUILD_APP}")
+message("\tpico-eye:  ${PRJ_APPS_BUILD_APP}")
 message("")
 
 message("Options")
