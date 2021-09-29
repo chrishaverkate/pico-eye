@@ -1,45 +1,43 @@
 # Overview
-## Intent
-Show a way of structuring a project like an engineer.
+## Problem
+Lux meters are expensive and many include advanced features and calculations for 
+photographers. There should be a simple project that can replicate the raw lux
+reading capability.
 
-There are many good "Getting Started..." guides that get you from parts in a box
-to your first blinking lights; that's not this project's goal.
-
-## Checklist
-While this list will vary depending on the requirements of the project, I feel
-like this is a good minimum:
-
-- [x] CMake
-  with [Modern Structure](https://cliutils.gitlab.io/modern-cmake/chapters/basics/structure.html)
-- [x] Platform specific build (Pico in this project)
-- [x] Desktop build (testing and analysis)
-- [x] Testing framework
-	- [x] Desktop
-	- [ ] Platform
-- [x] Build scripts
-	- [x] Docker to abstract cross-compile
-- [x] Documentation
-	- [x] Readme
-	- [x] structure
+## Goal
+Create a simple lux meter that can be relied on for reasonably accurate measurements
+of ambient light.
 
 # Workflow
+## Prerequisites
+### Hardware
+1. 2x [Raspberry Pi Pico](https://www.pishop.us/product/raspberry-pi-pico/)
+2. [Waveshare 1.14 inch LCD](https://www.amazon.com/gp/product/B08XK49TWM/ref=ppx_yo_dt_b_search_asin_image?ie=UTF8&psc=1)
+	* This project was initially built using the older (v1) 4-button version of the scren.
+3. [Adafruit VEML7700 Lux Sensor](https://www.adafruit.com/product/439)
+4. Breadboard(s), wire, etc.
+
+### Software
+The projects makes use of the [Raspberry Pi Pico](https://www.raspberrypi.org/documentation/microcontrollers/raspberry-pi-pico.html)
+as a programming device.
+1. OpenOCD (see the getting-started-with-pico.pdf)
+2. Wire up two Picos. There are several guides, but I liked the one by electronics-lab.com
+   [... Ways to debug your Raspberry Pi Pico](https://www.electronics-lab.com/understanding-the-ways-to-debug-your-raspberry-pi-pico-development-board/)
+
 ## Checkout
 Don't forget to init the submodules! `git submodule update --init`
 
 ## Building
 ### Scripts
 Building on a Linux desktop is the easiest:
-	cd scripts && ./build
 
-# Programming Pico
-## Prerequisites
+`cd scripts && ./build`
 
-1. OpenOCD (link)
-2. Wire up two Picos
+### Programming
+Once you have your picoprobe working, you can use the script:
 
-## Commands
+`cd scripts && ./load-app.bash`
 
-    openocd -f tcl/interface/picoprobe.cfg -f tcl/target/rp2040.cfg -c "program <path>/pico-blink.elf verify reset exit"
 
 ### Troubleshooting
 If you get an error like:
