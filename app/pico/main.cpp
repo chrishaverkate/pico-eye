@@ -1,37 +1,45 @@
 
-#include <pico/binary_info.h>
-#include <pico/stdlib.h>
+
 #include <pico-eye/veml7700.h>
+#include <pico-eye/tcs3471.h>
+
+#include "ui_lcd.h"
+
 #include <stdio.h>
+#include <memory>
 
 #include <hardware/i2c.h>
 #include <pico/stdlib.h>
+#include <pico/binary_info.h>
 
-extern "C" {
-#include "lcd/lib/Config/DEV_Config.h"
-#include "lcd/lib/GUI/GUI_Paint.h"
-#include "lcd/lib/LCD/LCD_1in14.h"
-}
+using std::make_unique;
 
+//#define vem
+
+#ifdef vem
 static const int ADDRESS_LUX = 0x10;  ///< default address for VEML7700
+#else
+static const int ADDRESS_LUX = 0x29;  ///< default address for TCS3471
+#endif
 static const uint PIN_I2C_SDA = 26;   ///< pin for i2c1 data
 static const uint PIN_I2C_SCL = 27;   ///< pin for i2c1 clock
 
-static const absolute_time_t DELAY_READ_LUX = 1000000;
+static const absolute_time_t DELAY_READ_LUX = 50000;
 
-void read_lux(i2c_inst_t* handle, Veml7700& sensor);
-void configure_lux(i2c_inst_t* handle, Veml7700& sensor);
+void read_lux_veml(i2c_inst_t* handle, Veml7700& sensor);
+void configure_lux_veml(i2c_inst_t* handle, Veml7700& sensor);
 
-void init_lcd(UWORD*& display_buffer);
-void update_lux(UWORD* display_buffer, float lux);
+void read_lux_tcs(i2c_inst_t* handle, Tcs3471& sensor);
+void configure_lux_tcs(i2c_inst_t* handle, Tcs3471& sensor);
 
 int main() {
 	stdio_init_all();
 	printf("-> Entering main!\n");
 
 	printf("...Setting up LCD Screen\n");
-	UWORD* display_buffer;
-	init_lcd(display_buffer);
+
+	auto ui_lcd = make_unique<UiLCD>();
+	ui_lcd->initialize();
 
 	printf("...Setting up i2c\n");
 	i2c_inst_t* handle = i2c1;
@@ -47,25 +55,37 @@ int main() {
 		printf("! Error setting up i2c: %u\n", init_result);
 	}
 
+#ifdef vem
 	Veml7700 sensor;
-	configure_lux(handle, sensor);
-
+	configure_lux_veml(handle, sensor);
+#else
+	Tcs3471 sensor;
+	configure_lux_tcs(handle, sensor);
+#endif
 	static absolute_time_t last_us = get_absolute_time();
 
 	while (true) {
-		sleep_ms(100);
+		sleep_ms(10);
 		absolute_time_t now_us = get_absolute_time();
 
 		if (now_us - last_us > DELAY_READ_LUX) {
-			read_lux(handle, sensor);
-			update_lux(display_buffer, sensor.get_white_channel_lux());
-			printf("%.2f lux\n", sensor.get_white_channel_lux());
+#ifdef vem
+			read_lux_veml(handle, sensor);
+#else
+			read_lux_tcs(handle, sensor);
+#endif
+			ui_lcd->update_lux(sensor.get_white_channel_lux());
+			ui_lcd->update_red(sensor.get_red_percent());
+			ui_lcd->update_green(sensor.get_green_percent());
+			ui_lcd->update_blue(sensor.get_blue_percent());
+			ui_lcd->update_clear(sensor.get_clear_percent());
+			ui_lcd->draw();
 			last_us = now_us;
 		}
 	}
 }
 
-void read_lux(i2c_inst_t* handle, Veml7700& sensor) {
+void read_lux_veml(i2c_inst_t* handle, Veml7700& sensor) {
 	// Send request
 	uint8_t buffer_request[10]{};
 	uint8_t buffer_length = 0;
@@ -84,7 +104,7 @@ void read_lux(i2c_inst_t* handle, Veml7700& sensor) {
 	}
 }
 
-void configure_lux(i2c_inst_t* handle, Veml7700& sensor) {
+void configure_lux_veml(i2c_inst_t* handle, Veml7700& sensor) {
 	printf("Configuring VEML7700...\n");
 
 	uint8_t buffer[30]{};
@@ -100,42 +120,48 @@ void configure_lux(i2c_inst_t* handle, Veml7700& sensor) {
 	printf("\tBytes written: %d\n", result_write);
 }
 
-void init_lcd(UWORD*& display_buffer) {
-	UDOUBLE image_size = LCD_1IN14_HEIGHT * LCD_1IN14_WIDTH * 2;
-	if((display_buffer = (UWORD*)malloc(image_size)) == NULL) {
-		printf("Failed to apply for black memory...\r\n");
-		while(1) ;
+void read_lux_tcs(i2c_inst_t* handle, Tcs3471& sensor) {
+	// Send request
+	uint8_t buffer_request[1]{};
+
+	// Issuing a read with no data will get a response of all 28 buffers
+	i2c_write_blocking(handle, ADDRESS_LUX, buffer_request, 0, false);
+
+	//Get response
+	uint8_t buffer_response[30]{};
+	int bytes_available = i2c_read_blocking(handle, 0x29, buffer_response, 28, false);
+
+	if (bytes_available > 0) {
+		sensor.cache_raw_buffers(buffer_response);
+//		uint16_t green = buffer_response[Tcs3471::REG_DATA_HIGH_GREEN] << 8 | buffer_response[Tcs3471::REG_DATA_LOW_GREEN];
+//		printf("\t - green: %u\n", green);
+	} else {
+		printf("\t ! no bytes to read.\n");
 	}
-
-	if(DEV_Module_Init() != 0){
-		printf("! LCD: Error DEV_Module_Init()\n");
-		return;
-	}
-
-	// Set brightness
-	DEV_SET_PWM(50);
-
-	/* LCD Init */
-	printf("Clearing Screen...\n");
-	LCD_1IN14_Init(HORIZONTAL);
-	LCD_1IN14_Clear(WHITE);
-
-	Paint_NewImage((UBYTE*)display_buffer, LCD_1IN14.WIDTH, LCD_1IN14.HEIGHT, 0, WHITE);
-	Paint_SetScale(65);
-	Paint_Clear(WHITE);
-	Paint_SetRotate(ROTATE_270);
-	Paint_Clear(BLACK);
-
-	Paint_DrawString_EN(1, 1, "Lux:", &Font24, BLACK, WHITE);
-	LCD_1IN14_Display(display_buffer);
-	sleep_ms(2000);
 }
 
-void update_lux(UWORD* display_buffer, float lux) {
-	Paint_Clear(BLACK);
-	char buffer[30];
-	snprintf(buffer, 29, "%.2f", lux);
-	Paint_DrawString_EN(1, 1, "Lux:", &Font24, BLACK, WHITE);
-	Paint_DrawString_EN(1, 24, buffer, &Font24, BLACK, WHITE);
-	LCD_1IN14_Display(display_buffer);
+void configure_lux_tcs(i2c_inst_t* handle, Tcs3471& sensor) {
+	printf("Configuring TCS3471...\n");
+	uint8_t buffer[30]{};
+	uint8_t buffer_length = 0;
+	int result_write = 0;
+
+	// set gain to 4x
+	buffer[0] = 0x0F;
+	buffer[1] = 0x01;
+	result_write += i2c_write_blocking(handle, ADDRESS_LUX, buffer, 2, false);
+
+	sleep_ms(3);
+
+	sensor.get_command_config(buffer, buffer_length);
+	result_write += i2c_write_blocking(handle, ADDRESS_LUX, buffer, buffer_length, false);
+
+
+
+	if(result_write > 0) {
+		printf("\t Success - ");
+	} else {
+		printf("\t Error - ");
+	}
+	printf("\tBytes written: %d\n", result_write);
 }

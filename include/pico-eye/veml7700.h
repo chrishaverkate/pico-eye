@@ -21,7 +21,6 @@ public:
 	 * @param[out] out_buffer_length number of bytes in buffer
 	 * @return true if valid configuration TODO: add more options for configuring.
 	 */
-
 	bool get_command_config(uint8_t* out_buffer, uint8_t& out_buffer_length);
 
 	/** @brief Fill a buffer for requesting the white channel data

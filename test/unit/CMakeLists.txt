@@ -1,6 +1,7 @@
 set(target_name unit-tests)
 
 add_executable(${target_name}
+	tcs3471_tests.cpp
 	veml7700_tests.cpp
 )
 

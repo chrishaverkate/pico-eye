@@ -11,6 +11,8 @@ add_subdirectory(lcd)
 
 add_executable(${target_name}
 	main.cpp
+	ui_lcd.cpp
+	ui_lcd.h
 )
 
 set_target_properties(${target_name}

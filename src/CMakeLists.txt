@@ -5,6 +5,7 @@ add_library(
 	${target_name}
 	OBJECT
 
+	tcs3471.cpp
 	veml7700.cpp
 )
 

@@ -18,15 +18,18 @@ bool Veml7700::get_command_config(uint8_t* out_buffer, uint8_t& out_buffer_lengt
 
 	return true;
 }
+
 void Veml7700::get_command_white_channel_output(uint8_t* out_buffer, uint8_t& out_buffer_length) const {
 	out_buffer[0] = COMMAND_WHITE_CHANNEL;
 	out_buffer[1] = _address_7bit << 1 | MODE_WRITE;
 	out_buffer_length = 2;
 }
+
 void Veml7700::cache_raw_results_white_channel(const uint8_t* results) {
 	uint16_t raw = results[1] << 8 | results[0];
 	_lux_white_channel = static_cast<float>(raw) * 0.1152f;  // TODO: this is hard-coded for a single config
 }
+
 float Veml7700::get_white_channel_lux() const {
 	return _lux_white_channel;
 }
