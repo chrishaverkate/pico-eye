@@ -57,36 +57,35 @@ void UiLCD::update_lux(uint32_t lux) {
 	char buffer[30];
 	snprintf(buffer, 29, "Lux: %lu", lux);
 	Paint_DrawRectangle(40, 1, 150, 25, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
-//	Paint_DrawString_EN(1, 1, "Lux:", &Font24, BLACK, WHITE);
 	Paint_DrawString_EN(1, 1, buffer, &Font24, BLACK, WHITE);
-//	LCD_1IN14_Display(_display_buffer);
+	draw();
 }
 
 void UiLCD::update_red(float red) {
-	Paint_DrawRectangle(100, 30, 115, 130, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
-	Paint_DrawRectangle(100, 30, 115, 130, RED, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
-	Paint_DrawRectangle(100, 130 - (int)red, 115, 130, RED, DOT_PIXEL_1X1, DRAW_FILL_FULL);
-//	LCD_1IN14_Display(_display_buffer);
+	_red_light.percent_filled = red;
+	draw_bar_vertical(_red_light);
 }
 
 void UiLCD::update_green(float green) {
-	Paint_DrawRectangle(120, 30, 135, 130, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
-	Paint_DrawRectangle(120, 30, 135, 130, GREEN, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
-	Paint_DrawRectangle(120, 130 - (int)green, 135, 130, GREEN, DOT_PIXEL_1X1, DRAW_FILL_FULL);
-//	LCD_1IN14_Display(_display_buffer);
+	_green_light.percent_filled = green;
+	draw_bar_vertical(_green_light);
 }
 
 void UiLCD::update_blue(float blue) {
-	Paint_DrawRectangle(140, 30, 155, 130, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
-	Paint_DrawRectangle(140, 30, 155, 130, BLUE, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
-	Paint_DrawRectangle(140, 130 - (int)blue, 155, 130, BLUE, DOT_PIXEL_1X1, DRAW_FILL_FULL);
-//	LCD_1IN14_Display(_display_buffer);
+	_blue_light.percent_filled = blue;
+	draw_bar_vertical(_blue_light);
 }
 
 void UiLCD::update_clear(float clear) {
-	Paint_DrawRectangle(160, 30, 175, 130, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
-	Paint_DrawRectangle(160, 30, 175, 130, WHITE, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
-	Paint_DrawRectangle(160, 130 - (int)clear, 175, 130, WHITE, DOT_PIXEL_1X1, DRAW_FILL_FULL);
-//	LCD_1IN14_Display(_display_buffer);
+	_clear_light.percent_filled = clear;
+	draw_bar_vertical(_clear_light);
 }
 
+void UiLCD::draw_bar_vertical(const Bar& bar) {
+	float fill_percent = (float)bar.percent_filled / 100.0f;
+	int y_start_for_fill = (bar.y_stop - bar.y_start) * fill_percent;
+	Paint_DrawRectangle(bar.x_start, bar.y_start, bar.x_stop, bar.y_stop, bar.background, DOT_PIXEL_1X1, DRAW_FILL_FULL);
+	Paint_DrawRectangle(bar.x_start, bar.y_start, bar.x_stop, bar.y_stop, bar.color, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
+	Paint_DrawRectangle(bar.x_start, bar.y_stop - y_start_for_fill, bar.x_stop, bar.y_stop, bar.color, DOT_PIXEL_1X1, DRAW_FILL_FULL);
+	draw();
+}

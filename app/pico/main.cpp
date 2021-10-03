@@ -21,7 +21,7 @@ static const int ADDRESS_RGB = 0x29;  ///< default address for TCS3471
 static const uint PIN_I2C_SDA = 26;   ///< pin for i2c1 data
 static const uint PIN_I2C_SCL = 27;   ///< pin for i2c1 clock
 
-static const absolute_time_t DELAY_READ_LUX = 50000;
+static const absolute_time_t DELAY_READ_LUX = 5000;
 
 void read_lux_veml(i2c_inst_t* handle, Veml7700& sensor);
 void configure_lux_veml(i2c_inst_t* handle, Veml7700& sensor);
@@ -75,7 +75,7 @@ int main() {
 			ui_lcd->update_green(sensor_rgb.get_green_percent());
 			ui_lcd->update_blue(sensor_rgb.get_blue_percent());
 			ui_lcd->update_clear(sensor_rgb.get_clear_percent());
-			ui_lcd->draw();
+
 			last_us = now_us;
 		}
 	}
@@ -129,8 +129,6 @@ void read_lux_tcs(i2c_inst_t* handle, Tcs3471& sensor) {
 
 	if (bytes_available > 0) {
 		sensor.cache_raw_buffers(buffer_response);
-//		uint16_t green = buffer_response[Tcs3471::REG_DATA_HIGH_GREEN] << 8 | buffer_response[Tcs3471::REG_DATA_LOW_GREEN];
-//		printf("\t - green: %u\n", green);
 	} else {
 		printf("\t ! no bytes to read.\n");
 	}
