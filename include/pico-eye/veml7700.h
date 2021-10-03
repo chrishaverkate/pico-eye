@@ -35,11 +35,11 @@ public:
 	void cache_raw_results_white_channel(const uint8_t* results);
 
 	/** @return the cached lux calculation. */
-	float get_white_channel_lux() const;
+	uint32_t get_white_channel_lux() const;
 
 private:
 	uint8_t _address_7bit = 0x10;  ///< Default i2c address of the VEML7700 sensor in 7-bit addressing
 
-	float _lux_white_channel = 0;  ///< Cached calculation of the white channel lux (calculated in cache_raw...)
+	uint32_t _lux_white_channel = 0;  ///< Cached calculation of the white channel lux (calculated in cache_raw...)
 
 };

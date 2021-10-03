@@ -27,9 +27,9 @@ void Veml7700::get_command_white_channel_output(uint8_t* out_buffer, uint8_t& ou
 
 void Veml7700::cache_raw_results_white_channel(const uint8_t* results) {
 	uint16_t raw = results[1] << 8 | results[0];
-	_lux_white_channel = static_cast<float>(raw) * 0.1152f;  // TODO: this is hard-coded for a single config
+	_lux_white_channel = static_cast<uint32_t>(raw * 0.1152f);  // TODO: this is hard-coded for a single config
 }
 
-float Veml7700::get_white_channel_lux() const {
+uint32_t Veml7700::get_white_channel_lux() const {
 	return _lux_white_channel;
 }

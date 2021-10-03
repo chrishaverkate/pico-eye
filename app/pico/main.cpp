@@ -14,13 +14,10 @@
 
 using std::make_unique;
 
-//#define vem
 
-#ifdef vem
 static const int ADDRESS_LUX = 0x10;  ///< default address for VEML7700
-#else
-static const int ADDRESS_LUX = 0x29;  ///< default address for TCS3471
-#endif
+static const int ADDRESS_RGB = 0x29;  ///< default address for TCS3471
+
 static const uint PIN_I2C_SDA = 26;   ///< pin for i2c1 data
 static const uint PIN_I2C_SCL = 27;   ///< pin for i2c1 clock
 
@@ -55,13 +52,12 @@ int main() {
 		printf("! Error setting up i2c: %u\n", init_result);
 	}
 
-#ifdef vem
-	Veml7700 sensor;
-	configure_lux_veml(handle, sensor);
-#else
-	Tcs3471 sensor;
-	configure_lux_tcs(handle, sensor);
-#endif
+	Veml7700 sensor_lux;
+	configure_lux_veml(handle, sensor_lux);
+
+	Tcs3471 sensor_rgb;
+	configure_lux_tcs(handle, sensor_rgb);
+
 	static absolute_time_t last_us = get_absolute_time();
 
 	while (true) {
@@ -69,16 +65,16 @@ int main() {
 		absolute_time_t now_us = get_absolute_time();
 
 		if (now_us - last_us > DELAY_READ_LUX) {
-#ifdef vem
-			read_lux_veml(handle, sensor);
-#else
-			read_lux_tcs(handle, sensor);
-#endif
-			ui_lcd->update_lux(sensor.get_white_channel_lux());
-			ui_lcd->update_red(sensor.get_red_percent());
-			ui_lcd->update_green(sensor.get_green_percent());
-			ui_lcd->update_blue(sensor.get_blue_percent());
-			ui_lcd->update_clear(sensor.get_clear_percent());
+
+			read_lux_veml(handle, sensor_lux);
+
+			read_lux_tcs(handle, sensor_rgb);
+
+			ui_lcd->update_lux(sensor_lux.get_white_channel_lux());
+			ui_lcd->update_red(sensor_rgb.get_red_percent());
+			ui_lcd->update_green(sensor_rgb.get_green_percent());
+			ui_lcd->update_blue(sensor_rgb.get_blue_percent());
+			ui_lcd->update_clear(sensor_rgb.get_clear_percent());
 			ui_lcd->draw();
 			last_us = now_us;
 		}
@@ -125,11 +121,11 @@ void read_lux_tcs(i2c_inst_t* handle, Tcs3471& sensor) {
 	uint8_t buffer_request[1]{};
 
 	// Issuing a read with no data will get a response of all 28 buffers
-	i2c_write_blocking(handle, ADDRESS_LUX, buffer_request, 0, false);
+	i2c_write_blocking(handle, ADDRESS_RGB, buffer_request, 0, false);
 
 	//Get response
 	uint8_t buffer_response[30]{};
-	int bytes_available = i2c_read_blocking(handle, 0x29, buffer_response, 28, false);
+	int bytes_available = i2c_read_blocking(handle, ADDRESS_RGB, buffer_response, 28, false);
 
 	if (bytes_available > 0) {
 		sensor.cache_raw_buffers(buffer_response);
@@ -149,12 +145,12 @@ void configure_lux_tcs(i2c_inst_t* handle, Tcs3471& sensor) {
 	// set gain to 4x
 	buffer[0] = 0x0F;
 	buffer[1] = 0x01;
-	result_write += i2c_write_blocking(handle, ADDRESS_LUX, buffer, 2, false);
+	result_write += i2c_write_blocking(handle, ADDRESS_RGB, buffer, 2, false);
 
 	sleep_ms(3);
 
 	sensor.get_command_config(buffer, buffer_length);
-	result_write += i2c_write_blocking(handle, ADDRESS_LUX, buffer, buffer_length, false);
+	result_write += i2c_write_blocking(handle, ADDRESS_RGB, buffer, buffer_length, false);
 
 
 

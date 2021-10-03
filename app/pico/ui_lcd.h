@@ -10,7 +10,7 @@ public:
 	void initialize();
 	void draw();
 
-	void update_lux(float lux);
+	void update_lux(uint32_t lux);
 	void update_red(float red);
 	void update_green(float green);
 	void update_blue(float blue);
