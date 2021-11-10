@@ -26,8 +26,8 @@ static const absolute_time_t DELAY_READ_LUX = 5000;
 void read_lux_veml(i2c_inst_t* handle, Veml7700& sensor);
 void configure_lux_veml(i2c_inst_t* handle, Veml7700& sensor);
 
-void read_lux_tcs(i2c_inst_t* handle, Tcs3471& sensor);
-void configure_lux_tcs(i2c_inst_t* handle, Tcs3471& sensor);
+void read_tcs(i2c_inst_t* handle, Tcs3471& sensor);
+void configure_tcs(i2c_inst_t* handle, Tcs3471& sensor);
 
 int main() {
 	stdio_init_all();
@@ -52,11 +52,11 @@ int main() {
 		printf("! Error setting up i2c: %u\n", init_result);
 	}
 
+	Tcs3471 sensor_rgb;
+	configure_tcs(handle, sensor_rgb);
+
 	Veml7700 sensor_lux;
 	configure_lux_veml(handle, sensor_lux);
-
-	Tcs3471 sensor_rgb;
-	configure_lux_tcs(handle, sensor_rgb);
 
 	static absolute_time_t last_us = get_absolute_time();
 
@@ -68,14 +68,17 @@ int main() {
 
 			read_lux_veml(handle, sensor_lux);
 
-			read_lux_tcs(handle, sensor_rgb);
+			read_tcs(handle, sensor_rgb);
 
 			ui_lcd->update_lux(sensor_lux.get_white_channel_lux());
 			ui_lcd->update_red(sensor_rgb.get_red_percent());
 			ui_lcd->update_green(sensor_rgb.get_green_percent());
 			ui_lcd->update_blue(sensor_rgb.get_blue_percent());
 			ui_lcd->update_clear(sensor_rgb.get_clear_percent());
+			ui_lcd->update_cct(sensor_rgb.calculate_cct());
 
+			sensor_rgb.calculate_cct();
+			sleep_ms(1000);
 			last_us = now_us;
 		}
 	}
@@ -116,7 +119,7 @@ void configure_lux_veml(i2c_inst_t* handle, Veml7700& sensor) {
 	printf("\tBytes written: %d\n", result_write);
 }
 
-void read_lux_tcs(i2c_inst_t* handle, Tcs3471& sensor) {
+void read_tcs(i2c_inst_t* handle, Tcs3471& sensor) {
 	// Send request
 	uint8_t buffer_request[1]{};
 
@@ -134,21 +137,28 @@ void read_lux_tcs(i2c_inst_t* handle, Tcs3471& sensor) {
 	}
 }
 
-void configure_lux_tcs(i2c_inst_t* handle, Tcs3471& sensor) {
+void configure_tcs(i2c_inst_t* handle, Tcs3471& sensor) {
 	printf("Configuring TCS3471...\n");
 	uint8_t buffer[30]{};
 	uint8_t buffer_length = 0;
 	int result_write = 0;
 
 	// set gain to 4x
-	buffer[0] = 0x0F;
-	buffer[1] = 0x01;
+	buffer[0] = 0x8F;
+	buffer[1] = 0x02;
 	result_write += i2c_write_blocking(handle, ADDRESS_RGB, buffer, 2, false);
 
-	sleep_ms(3);
+	sleep_ms(1);
 
 	sensor.get_command_config(buffer, buffer_length);
 	result_write += i2c_write_blocking(handle, ADDRESS_RGB, buffer, buffer_length, false);
+
+	// set integration time to 24ms
+//	buffer[0] = 0x81;
+//	buffer[1] = 0xF6;
+//	result_write += i2c_write_blocking(handle, ADDRESS_RGB, buffer, 2, false);
+
+
 
 
 

@@ -19,6 +19,7 @@ public:
 	void update_green(float green);
 	void update_blue(float blue);
 	void update_clear(float clear);
+	void update_cct(int cct);
 
 
 

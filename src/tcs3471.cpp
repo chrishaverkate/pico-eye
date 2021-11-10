@@ -1,4 +1,5 @@
 
+#include <cstdio>
 #include <cstring>
 #include <pico-eye/tcs3471.h>
 
@@ -8,7 +9,7 @@ bool Tcs3471::get_command_config(uint8_t* out_buffer, uint8_t& out_buffer_length
 	message |= 0x02; // Enable RGBC ADCs
 	message |= 0x01; // Power ON
 
-	out_buffer[0] = REG_ENABLE;
+	out_buffer[0] = REG_ENABLE | COMMAND_MASK;
 	out_buffer[1] = message;
 
 	out_buffer_length = 2;
@@ -66,4 +67,32 @@ uint16_t Tcs3471::get_saturation_count() const {
 	uint16_t saturation = (static_cast<uint16_t>(_raw_results[REG_RGBC_TIMING] / 2.7) * 1024) - 1;
 	uint16_t max_count = (256 - _raw_results[REG_RGBC_TIMING]) * 1024;
 	return saturation;
+}
+int Tcs3471::calculate_cct() {
+//	int R = (get_red_percent() / 100.0) * 255;
+//	int G = (get_green_percent() / 100.0) * 255;
+//	int B = (get_blue_percent() / 100.0) * 255;
+
+	int R = get_red_percent();
+	int G = get_green_percent();
+	int B = get_blue_percent();
+
+	return cct(R, G, B);
+}
+int Tcs3471::cct(int R, int G, int B) {
+	float X = (-0.14282 * R) + (1.54924 * G) + (-0.95641 * B);
+	float Y = (-0.32466 * R) + (1.57837 * G) + (-0.73191 * B);
+	float Z = (-0.68202 * R) + (0.77073 * G) + (0.56332 * B);
+
+	float x = X / (X + Y + Z);
+	float y = Y / (X + Y + Z);
+
+	float n = (x - 0.3320) / (0.1858 - y);
+	float cct = (449 * (n*n*n)) + (3525 * (n*n)) + (6823.3* n) + 5520.33;
+
+	printf("\t -> R,G,B, Lux, CCT: %u,%u,%u, %.2f %dk\n", R, G, B, Y, static_cast<int>(cct));
+	if(cct < 0 || 12000 < cct) {
+		cct = -1;
+	}
+	return static_cast<int>(cct);
 }

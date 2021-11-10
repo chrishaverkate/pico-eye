@@ -9,8 +9,22 @@
  */
 class Tcs3471 {
 public:
+	static const uint8_t COMMAND_MASK = 0x01 << 7 | 0x01 << 6; // Selecting command reg and auto-increment to next
+
 	static const uint8_t REG_ENABLE = 0x0;
 	static const uint8_t REG_RGBC_TIMING = 0x01;
+	static const uint8_t REG_WAIT_TIME = 0x03;
+	static const uint8_t REG_INT_THRESH_LOW_LOW = 0x04;   ///< low threshold, low byte
+	static const uint8_t REG_INT_THRESH_LOW_HIGH = 0x05;  ///< low threshold, high byte
+	static const uint8_t REG_INT_THRESH_HIGH_LOW = 0x06;  ///< high threshold, low byte
+	static const uint8_t REG_INT_THRESH_HIGH_HIGH = 0x07; ///< high threshold, high byte
+
+	static const uint8_t REG_INT_PERSISTENCE = 0x0C;
+	static const uint8_t REG_CONFIGURATION = 0x0D;
+	static const uint8_t REG_GAIN = 0x0F;
+
+	static const uint8_t REG_ID = 0x12;
+	static const uint8_t REG_STATUS = 0x13;
 
 	static const uint8_t REG_DATA_LOW_CLEAR = 0x14;
 	static const uint8_t REG_DATA_HIGH_CLEAR = 0x15;
@@ -47,11 +61,11 @@ public:
 
 	uint16_t get_saturation_count() const;
 
+	int calculate_cct();
+	int cct(int R, int G, int B);
+
 private:
-
 	uint8_t _address_7bit = 0x29;  ///< Default i2c address in 7-bit addressing
-
-	float _lux_white_channel = 0;  ///< Cached calculation of the white channel lux (calculated in cache_raw...)
-
-	uint8_t _raw_results[27];
+	uint8_t _config_buffer[16];
+	uint8_t _raw_results[28];
 };

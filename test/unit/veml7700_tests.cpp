@@ -39,7 +39,7 @@ TEST_F(Veml7700Tests, cache_and_get_white_channel_lux) {
 	uint8_t buffer[2] = {0xd9, 0x00};  // 25 lux at 50ms with 1x gain
 	_sensor.cache_raw_results_white_channel(buffer);
 
-	EXPECT_NEAR(25.00, _sensor.get_white_channel_lux(), 0.2);
+	EXPECT_NEAR(25.00, _sensor.get_white_channel_lux(), 1);
 }
 
 /**

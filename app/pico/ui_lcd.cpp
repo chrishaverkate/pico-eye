@@ -44,6 +44,7 @@ void UiLCD::initialize() {
 	update_green(0.0f);
 	update_blue(0.0f);
 	update_clear(0.0f);
+	update_cct(0);
 
 	LCD_1IN14_Display(_display_buffer);
 //	sleep_ms(2000);
@@ -87,5 +88,13 @@ void UiLCD::draw_bar_vertical(const Bar& bar) {
 	Paint_DrawRectangle(bar.x_start, bar.y_start, bar.x_stop, bar.y_stop, bar.background, DOT_PIXEL_1X1, DRAW_FILL_FULL);
 	Paint_DrawRectangle(bar.x_start, bar.y_start, bar.x_stop, bar.y_stop, bar.color, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
 	Paint_DrawRectangle(bar.x_start, bar.y_stop - y_start_for_fill, bar.x_stop, bar.y_stop, bar.color, DOT_PIXEL_1X1, DRAW_FILL_FULL);
+	draw();
+}
+
+void UiLCD::update_cct(int cct) {
+	char buffer[30];
+	snprintf(buffer, 29, "%d K", cct);
+	Paint_DrawRectangle(1, 40, 100, 60, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
+	Paint_DrawString_EN(1, 40, buffer, &Font24, BLACK, WHITE);
 	draw();
 }
