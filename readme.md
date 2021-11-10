@@ -1,12 +1,24 @@
 # Overview
 ## Problem
-Lux meters are expensive and many include advanced features and calculations for 
-photographers. There should be a simple project that can replicate the raw lux
-reading capability.
+Lux meters and colorimeters are expensive and many include advanced features and calculations for 
+photographers. The two measurements often come as two different devices as well.
+There should be a simple project that can replicate the raw lux reading and
+color temperature reading capabilities.
 
 ## Goal
-Create a simple lux meter that can be relied on for reasonably accurate measurements
+1. Create a simple lux meter that can be relied on for reasonably accurate measurements
 of ambient light.
+2. Add a color sensor for measuring the intensity of different color channels and
+calculate an estimated color temperature.
+
+## Current State
+* A light sensor has been integrated and is calculating an estimated lux level
+* Lux level is printed to an LCD screen
+* A color sensor has been integrated and is calculating an estimated color temperature
+  * No calibration has been performed. The correction matrix is directly from a white paper
+    by the manufacturer
+* Color temperature (in Kelvin) is printed to an LCD screen
+* Saturation bars for red, green, blue, and unfiltered light is painted to an LCD screen
 
 # Workflow
 ## Prerequisites
