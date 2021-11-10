@@ -20,14 +20,24 @@ calculate an estimated color temperature.
 * Color temperature (in Kelvin) is printed to an LCD screen
 * Saturation bars for red, green, blue, and unfiltered light is painted to an LCD screen
 
+### Images
+Full setup
+![Full Setup](./docs/pictures/pico-eye-small.jpg)
+
+UI
+![Full Setup](./docs/pictures/pico-eye-ui.jpg)
+
+
+
 # Workflow
 ## Prerequisites
 ### Hardware
 1. 2x [Raspberry Pi Pico](https://www.pishop.us/product/raspberry-pi-pico/)
 2. [Waveshare 1.14 inch LCD](https://www.amazon.com/gp/product/B08XK49TWM/ref=ppx_yo_dt_b_search_asin_image?ie=UTF8&psc=1)
-	* This project was initially built using the older (v1) 4-button version of the scren.
+    * This project was initially built using the older (v1) 4-button version of the scren.
 3. [Adafruit VEML7700 Lux Sensor](https://www.adafruit.com/product/439)
-4. Breadboard(s), wire, etc.
+4. [TCS34717 Color Sensor](https://ams.com/tcs34717)
+5. Breadboard(s), wire, etc.
 
 ### Software
 The projects makes use of the [Raspberry Pi Pico](https://www.raspberrypi.org/documentation/microcontrollers/raspberry-pi-pico.html)
